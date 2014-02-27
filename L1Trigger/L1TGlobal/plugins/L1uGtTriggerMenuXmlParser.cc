@@ -1945,7 +1945,9 @@ bool l1t::L1uGtTriggerMenuXmlParser::parseCalo(l1t::CalorimeterCondition condCal
       // ET Threshold
       str_condCalo = l1t2string( objPar->etThreshold() );
       if( !getXMLHexTextValue(str_condCalo, dst) ) return false;
-      if( cnt<nrObj ) objParameter[cnt].etThreshold = dst;
+      //if( cnt<nrObj ) objParameter[cnt].etThreshold = dst;
+      /// DMP: Use dec instead of hex
+      if( cnt<nrObj ) objParameter[cnt].etThreshold = objPar->etThreshold();
 
       // Eta Range
       //str_condCalo = "ffff";
@@ -2037,6 +2039,12 @@ bool l1t::L1uGtTriggerMenuXmlParser::parseCalo(l1t::CalorimeterCondition condCal
 	<< "\n\t condRanges->deltaPhiRange().lower() = " << condRanges->deltaPhiRange().lower()
 	<< "\n\t condRanges->deltaPhiRange().upper() = " << condRanges->deltaPhiRange().upper() 
 	<< std::endl;
+
+      corrParameter.deltaEtaRangeLower = condRanges->deltaEtaRange().lower();
+      corrParameter.deltaEtaRangeUpper = condRanges->deltaEtaRange().upper();
+
+      corrParameter.deltaPhiRangeLower = condRanges->deltaPhiRange().lower();
+      corrParameter.deltaPhiRangeUpper = condRanges->deltaPhiRange().upper();
 
       //
       /// Temporary
@@ -3547,7 +3555,7 @@ bool l1t::L1uGtTriggerMenuXmlParser::parseId( l1t::Meta meta ) {
     m_triggerMenuInterfaceDate = "2013-010-24T15:33:24";
     m_triggerMenuInterfaceAuthor = "Darren Puigh";
     m_triggerMenuInterfaceDescription = l1t2string( meta.description() );
-    m_algorithmImplementation = l1t2string( meta.firmwareVersion() );
+//     m_algorithmImplementation = l1t2string( meta.firmwareVersion() );
 //     m_triggerMenuDate = l1t2string( meta.changesDate() );
 //     m_triggerMenuAuthor = l1t2string( meta.changesAuthor() );
     m_triggerMenuDescription = l1t2string( meta.description() );

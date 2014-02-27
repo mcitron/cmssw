@@ -47,8 +47,8 @@ Tracer::Tracer(ParameterSet const& iPS, ActivityRegistry&iRegistry) :
   iRegistry.watchPostBeginJob(this, &Tracer::postBeginJob);
   iRegistry.watchPostEndJob(this, &Tracer::postEndJob);
 
-  iRegistry.watchPreSource(this, &Tracer::preSource);
-  iRegistry.watchPostSource(this, &Tracer::postSource);
+  iRegistry.watchPreSourceEvent(this, &Tracer::preSourceEvent);
+  iRegistry.watchPostSourceEvent(this, &Tracer::postSourceEvent);
 
   iRegistry.watchPreSourceLumi(this, &Tracer::preSourceLumi);
   iRegistry.watchPostSourceLumi(this, &Tracer::postSourceLumi);
@@ -109,6 +109,8 @@ Tracer::Tracer(ParameterSet const& iPS, ActivityRegistry&iRegistry) :
 
   iRegistry.watchPreModuleEvent(this, &Tracer::preModuleEvent);
   iRegistry.watchPostModuleEvent(this, &Tracer::postModuleEvent);
+  iRegistry.watchPreModuleEventDelayedGet(this, &Tracer::preModuleEventDelayedGet);
+  iRegistry.watchPostModuleEventDelayedGet(this, &Tracer::postModuleEventDelayedGet);
 
   iRegistry.watchPreModuleStreamBeginRun(this, &Tracer::preModuleStreamBeginRun);
   iRegistry.watchPostModuleStreamBeginRun(this, &Tracer::postModuleStreamBeginRun);
@@ -162,12 +164,12 @@ Tracer::postEndJob() {
 }
 
 void
-Tracer::preSource() {
+Tracer::preSourceEvent(StreamID sid) {
   LogAbsolute("Tracer") << indention_ << indention_ << " starting: source event";
 }
 
 void
-Tracer::postSource() {
+Tracer::postSourceEvent(StreamID sid) {
   LogAbsolute("Tracer") << indention_ << indention_ << " finished: source event";
 }
 
@@ -177,7 +179,7 @@ Tracer::preSourceLumi() {
 }
 
 void
-Tracer::postSourceLumi () {
+Tracer::postSourceLumi() {
   LogAbsolute("Tracer") << indention_ << indention_ << " finished: source lumi";
 }
 
@@ -187,7 +189,7 @@ Tracer::preSourceRun() {
 }
 
 void
-Tracer::postSourceRun () {
+Tracer::postSourceRun() {
   LogAbsolute("Tracer") << indention_ << indention_ << " finished: source run";
 }
 
@@ -542,6 +544,35 @@ Tracer::postModuleEvent(StreamContext const& sc, ModuleCallingContext const& mcc
     out << indention_;
   }
   out << " finished: processing event for module: stream = " << sc.streamID() << " label = '" << mcc.moduleDescription()->moduleLabel() << "' id = " << mcc.moduleDescription()->id();
+  if(dumpContextForLabels_.find(mcc.moduleDescription()->moduleLabel()) != dumpContextForLabels_.end()) {
+    out << "\n" << sc;
+    out << mcc;
+  }
+}
+
+
+void
+Tracer::preModuleEventDelayedGet(StreamContext const& sc, ModuleCallingContext const& mcc) {
+  LogAbsolute out("Tracer");
+  unsigned int nIndents = mcc.depth() + 4;
+  for(unsigned int i = 0; i < nIndents; ++i) {
+    out << indention_;
+  }
+  out << " starting: delayed processing event for module: stream = " << sc.streamID() << " label = '" << mcc.moduleDescription()->moduleLabel() << "' id = " << mcc.moduleDescription()->id();
+  if(dumpContextForLabels_.find(mcc.moduleDescription()->moduleLabel()) != dumpContextForLabels_.end()) {
+    out << "\n" << sc;
+    out << mcc;
+  }
+}
+
+void
+Tracer::postModuleEventDelayedGet(StreamContext const& sc, ModuleCallingContext const& mcc) {
+  LogAbsolute out("Tracer");
+  unsigned int nIndents = mcc.depth() + 4;
+  for(unsigned int i = 0; i < nIndents; ++i) {
+    out << indention_;
+  }
+  out << " finished: delayed processing event for module: stream = " << sc.streamID() << " label = '" << mcc.moduleDescription()->moduleLabel() << "' id = " << mcc.moduleDescription()->id();
   if(dumpContextForLabels_.find(mcc.moduleDescription()->moduleLabel()) != dumpContextForLabels_.end()) {
     out << "\n" << sc;
     out << mcc;

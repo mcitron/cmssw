@@ -16,6 +16,7 @@
 #include "DataFormats/Provenance/interface/ParameterSetID.h"
 
 #include <string>
+#include <sys/time.h>
 #include <unistd.h>
 #include "zlib.h"
 
@@ -151,8 +152,7 @@ namespace edm {
     uint32 run = 1;
 
     //Get the Process PSet ID
-    pset::Registry const& reg = *pset::Registry::instance();
-    ParameterSetID toplevel = pset::getProcessParameterSetID(reg);
+    ParameterSetID toplevel = pset::getProcessParameterSetID();
 
     //In case we need to print it
     //  cms::Digest dig(toplevel.compactForm());
@@ -184,7 +184,7 @@ namespace edm {
                            getReleaseVersion().c_str() , processName.c_str(),
                            moduleLabel.c_str(), outputModuleId_,
                            hltTriggerNames, hltTriggerSelections_, l1_names,
-                           (uint32)serializeDataBuffer_.adler32_chksum(), host_name_));
+                           (uint32)serializeDataBuffer_.adler32_chksum()));
 
     // copy data into the destination message
     unsigned char* src = serializeDataBuffer_.bufferPointer();

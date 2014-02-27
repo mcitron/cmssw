@@ -51,15 +51,14 @@ process.dumpES = cms.EDAnalyzer("PrintEventSetupContent")
 process.RCTConverter = cms.EDProducer(
     "l1t::L1TCaloRCTToUpgradeConverter",
     regionTag = cms.InputTag("gctDigis"),
-    emTag = cms.InputTag("gctDigis"),
-    preSamples = cms.uint32(0),
-    postSamples = cms.uint32(0))
+    emTag = cms.InputTag("gctDigis"))
 
 process.caloTowers = cms.EDProducer("l1t::L1TCaloTowerProducer")
 process.caloStage1 = cms.EDProducer(
     "l1t::L1TCaloStage1Producer",
     CaloRegions = cms.InputTag("RCTConverter"),
-    CaloEmCands = cms.InputTag("RCTConverter")
+    CaloEmCands = cms.InputTag("RCTConverter"),
+    FirmwareVersion = cms.uint32(1)  ## 1=HI algo, 2= pp algo
     )
 
 process.GCTConverter=cms.EDProducer("l1t::L1TCaloUpgradeToGCTConverter",

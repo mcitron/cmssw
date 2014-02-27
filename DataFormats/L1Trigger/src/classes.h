@@ -33,7 +33,7 @@
 #include "DataFormats/L1Trigger/interface/L1uGtRecBlk.h"
 
 
-namespace {
+namespace DataFormats_L1Trigger {
   struct dictionary {
 
     l1t::L1CandidateBxCollection l1CandidateBxColl;

@@ -33,6 +33,15 @@ extractedGlobalMuons.trackType = "globalTrack"
 extractedMuonTracks_seq = cms.Sequence( extractedGlobalMuons )
 
 #
+# Configuration for Seed track extractor
+#
+
+import SimMuon.MCTruth.SeedToTrackProducer_cfi
+seedsOfSTAmuons = SimMuon.MCTruth.SeedToTrackProducer_cfi.SeedToTrackProducer.clone()
+seedsOfSTAmuons.L2seedsCollection = cms.InputTag("ancientMuonSeed")
+seedsOfSTAmuons_seq = cms.Sequence( seedsOfSTAmuons )
+
+#
 # Associators for Full Sim + Reco:
 #
 
@@ -40,6 +49,12 @@ tpToTkmuTrackAssociation = cms.EDProducer('TrackAssociatorEDProducer',
     associator = cms.string('TrackAssociatorByHits'),
     label_tp = cms.InputTag('mix', 'MergedTrackTruth'),
     label_tr = cms.InputTag('generalTracks')
+)
+
+tpToTkMuonTrackAssociation = cms.EDProducer('TrackAssociatorEDProducer',
+    associator = cms.string('MuonAssociatorByHits'),
+    label_tp = cms.InputTag('mix', 'MergedTrackTruth'),
+    label_tr = cms.InputTag('generalTracks','')
 )
 
 tpToStaTrackAssociation = cms.EDProducer('TrackAssociatorEDProducer',
@@ -136,6 +151,7 @@ tpToL3L2TrackTrackAssociation = cms.EDProducer("TrackAssociatorEDProducer",
 import SimMuon.MCTruth.MuonAssociatorByHits_cfi
 
 tpToTkMuonAssociation = SimMuon.MCTruth.MuonAssociatorByHits_cfi.muonAssociatorByHits.clone()
+tpToStaSeedAssociation = SimMuon.MCTruth.MuonAssociatorByHits_cfi.muonAssociatorByHits.clone()
 tpToStaMuonAssociation = SimMuon.MCTruth.MuonAssociatorByHits_cfi.muonAssociatorByHits.clone()
 tpToStaUpdMuonAssociation = SimMuon.MCTruth.MuonAssociatorByHits_cfi.muonAssociatorByHits.clone()
 tpToGlbMuonAssociation = SimMuon.MCTruth.MuonAssociatorByHits_cfi.muonAssociatorByHits.clone()
@@ -156,6 +172,12 @@ tpToTkMuonAssociation.tpTag = 'mix:MergedTrackTruth'
 tpToTkMuonAssociation.tracksTag = 'generalTracks'
 tpToTkMuonAssociation.UseTracker = True
 tpToTkMuonAssociation.UseMuon = False
+
+tpToStaSeedAssociation.tpTag = 'mix:MergedTrackTruth'
+tpToStaSeedAssociation.tracksTag = 'seedsOfSTAmuons'
+tpToStaSeedAssociation.UseTracker = False
+tpToStaSeedAssociation.UseMuon = True
+
 
 tpToStaMuonAssociation.tpTag = 'mix:MergedTrackTruth'
 tpToStaMuonAssociation.tracksTag = 'standAloneMuons'
@@ -292,7 +314,9 @@ tpToGlbCosmicMuonAssociation.UseMuon = True
 
 muonAssociation_seq = cms.Sequence(
     extractedMuonTracks_seq
-    +(tpToTkMuonAssociation+tpToStaMuonAssociation+tpToStaUpdMuonAssociation+tpToGlbMuonAssociation)
+    + seedsOfSTAmuons_seq
+    +(tpToTkMuonAssociation)
+    +(tpToStaSeedAssociation+tpToStaMuonAssociation+tpToStaUpdMuonAssociation+tpToGlbMuonAssociation)
     +(tpToTkmuTrackAssociation)
 #   +(tpToTkmuTrackAssociation+tpToStaTrackAssociation+tpToStaUpdTrackAssociation+tpToGlbTrackAssociation)
 )

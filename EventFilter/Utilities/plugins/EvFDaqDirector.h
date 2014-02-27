@@ -31,6 +31,7 @@ namespace evf{
       void preBeginRun(edm::RunID const& id, edm::Timestamp const& ts);
       void postEndRun(edm::Run const& run, edm::EventSetup const& es);
       std::string &baseDir(){return base_dir_;}
+      std::string &fuBaseDir(){return run_dir_;}
       std::string &smBaseDir(){return sm_base_dir_;}
       std::string &buBaseDir(){return bu_run_dir_;}
       std::string &buBaseOpenDir(){return bu_run_open_dir_;}
@@ -40,29 +41,34 @@ namespace evf{
       std::string findCurrentRunDir(){ return dirManager_.findRunDir(run_);}
       std::string findHighestRunDirStem();
       unsigned int findHighestRun(){return dirManager_.findHighestRun();}
-      std::string getRawFilePath(unsigned int ls, unsigned int index);
-      std::string getOpenRawFilePath(unsigned int ls, unsigned int index);
-      std::string getPathForFU();
+      std::string getRawFilePath(const unsigned int ls, const unsigned int index) const;
+      std::string getOpenRawFilePath(const unsigned int ls, const unsigned int index) const;
+      std::string getOpenDatFilePath(const unsigned int ls, std::string const& stream) const;
+      std::string getOutputJsonFilePath(const unsigned int ls, std::string const& stream) const;
+      std::string getMergedDatFilePath(const unsigned int ls, std::string const& stream) const;
+      std::string getInitFilePath(std::string const& stream) const;
+      std::string getEoLSFilePathOnBU(const unsigned int ls) const;
+      std::string getEoLSFilePathOnFU(const unsigned int ls) const;
+      std::string getEoRFilePath() const;
+      std::string getPathForFU() const;
       void removeFile(unsigned int ls, unsigned int index);
       void removeFile(std::string );
       void updateBuLock(unsigned int ls);
       int readBuLock();
       // DEPRECATED
       //int updateFuLock(unsigned int &ls);
-      bool updateFuLock(unsigned int& ls, unsigned int& index, bool& eorSeen);
+      bool updateFuLock(unsigned int& ls, std::string& nextFile, bool& eorSeen);
       void writeLsStatisticsBU(unsigned int, unsigned int, unsigned long long, long long);
       void writeLsStatisticsFU(unsigned int ls, unsigned int events, timeval completion_time){}
       void writeDiskAndThrottleStat(double, int, int);
       void tryInitializeFuLockFile();
+      unsigned int getRunNumber() const { return run_; }
       unsigned int getJumpLS() const { return jumpLS_; }
       unsigned int getJumpIndex() const { return jumpIndex_; }
+      std::string getJumpFilePath() const { return bu_run_dir_ + "/" + inputFileNameStem(jumpLS_,jumpIndex_) + ".raw"; }
       bool getTestModeNoBuilderUnit() { return testModeNoBuilderUnit_;}
       FILE * maybeCreateAndLockFileHeadForStream(unsigned int ls, std::string &stream);
       void unlockAndCloseMergeStream();
-      std::string formatRawFilePath(unsigned int ls, unsigned int index);
-      std::string formatOpenRawFilePath(unsigned int ls, unsigned int index);
-      std::string formatMergeFilePath(unsigned int ls, std::string &stream);
-      std::string formatEndOfLS(unsigned int ls);
 
     private:
       bool bulock();
@@ -73,9 +79,15 @@ namespace evf{
       bool mkFuRunDir();
       // This functionality is for emulator running only
       bool createOutputDirectory();
-      bool bumpFile(unsigned int& ls, unsigned int& index);
+      bool bumpFile(unsigned int& ls, unsigned int& index, std::string& nextFile);
       bool findHighestActiveLS(unsigned int& startingLS) const;
       void openFULockfileStream(std::string& fuLockFilePath, bool create);
+      std::string inputFileNameStem(const unsigned int ls, const unsigned int index) const;
+      std::string outputFileNameStem(const unsigned int ls, std::string const& stream) const;
+      std::string mergedFileNameStem(const unsigned int ls, std::string const& stream) const;
+      std::string initFileName(std::string const& stream) const;
+      std::string eolsFileName(const unsigned int ls) const;
+      std::string eorFileName() const;
 
       bool testModeNoBuilderUnit_;
       std::string base_dir_;
@@ -86,7 +98,7 @@ namespace evf{
       unsigned int run_;
 
       std::string hostname_;
-      std::string run_dir_name_;
+      std::string run_string_;
       std::string run_dir_;
       std::string bu_run_dir_;
       std::string bu_run_open_dir_;

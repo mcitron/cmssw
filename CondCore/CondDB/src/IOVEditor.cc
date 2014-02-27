@@ -1,6 +1,5 @@
 #include "CondCore/CondDB/interface/IOVEditor.h"
 #include "SessionImpl.h"
-#include "IOVSchema.h"
 //
 
 namespace cond {
@@ -23,8 +22,8 @@ namespace cond {
       std::string payloadType;
       cond::SynchronizationType synchronizationType; 
       std::string description;
-      cond::Time_t endOfValidity = cond::time::MAX;
-      cond::Time_t lastValidatedTime = cond::time::MIN; 
+      cond::Time_t endOfValidity = cond::time::MAX_VAL;
+      cond::Time_t lastValidatedTime = cond::time::MIN_VAL; 
       bool change = false;
       bool exists = false;
       // buffer for the iov sequence
@@ -67,9 +66,9 @@ namespace cond {
     }
     
     void IOVEditor::load( const std::string& tag ){
-      checkSession( "IOVEditor::load" );
+      checkTransaction( "IOVEditor::load" );
       // loads the current header data in memory
-      if( !TAG::select( tag, m_data->timeType, m_data->payloadType, m_data->endOfValidity, m_data->description, m_data->lastValidatedTime, *m_session ) ){
+      if( !m_session->iovSchema().tagTable().select( tag, m_data->timeType, m_data->payloadType, m_data->endOfValidity, m_data->description, m_data->lastValidatedTime ) ){
 	cond::throwException( "Tag \""+tag+"\" has not been found in the database.","IOVEditor::load");
       }
       m_data->tag = tag;
@@ -95,7 +94,7 @@ namespace cond {
     }
     
     cond::Time_t IOVEditor::endOfValidity() const {
-      return m_data.get() ? m_data->endOfValidity : cond::time::MIN;
+      return m_data.get() ? m_data->endOfValidity : cond::time::MIN_VAL;
     }
     
     void IOVEditor::setEndOfValidity( cond::Time_t time ){
@@ -117,7 +116,7 @@ namespace cond {
     }
     
     cond::Time_t IOVEditor::lastValidatedTime() const {
-      return m_data.get() ? m_data->lastValidatedTime : cond::time::MIN;
+      return m_data.get() ? m_data->lastValidatedTime : cond::time::MIN_VAL;
     }
     
     void IOVEditor::setLastValidatedTime(cond::Time_t time ){
@@ -141,16 +140,18 @@ namespace cond {
     
     bool IOVEditor::flush( const boost::posix_time::ptime& operationTime ){
       bool ret = false;
-      checkSession( "IOVEditor::flush" );
+      checkTransaction( "IOVEditor::flush" );
       if( m_data->change ){
 	if( m_data->description.empty() ) throwException( "A non-empty description string is mandatory.","IOVEditor::flush" );
 	if( !m_data->exists ){
-	  TAG::insert( m_data->tag, m_data->timeType, m_data->payloadType, m_data->synchronizationType, m_data->endOfValidity, 
-		       m_data->description, m_data->lastValidatedTime, operationTime, *m_session );
+	  m_session->iovSchema().tagTable().insert( m_data->tag, m_data->timeType, m_data->payloadType, 
+						    m_data->synchronizationType, m_data->endOfValidity, 
+						    m_data->description, m_data->lastValidatedTime, operationTime );
 	  m_data->exists = true;
 	  ret = true;
 	} else {
-	  TAG::update( m_data->tag, m_data->endOfValidity, m_data->description, m_data->lastValidatedTime, operationTime, *m_session );   
+	  m_session->iovSchema().tagTable().update( m_data->tag, m_data->endOfValidity, m_data->description, 
+						    m_data->lastValidatedTime, operationTime );   
 	  ret = true;
 	}
 	m_data->change = false;
@@ -158,7 +159,7 @@ namespace cond {
       if( m_data->iovBuffer.size() ) {
 	
 	// insert the new iovs
-	IOV::insertMany( m_data->tag, m_data->iovBuffer, *m_session );
+	m_session->iovSchema().iovTable().insertMany( m_data->tag, m_data->iovBuffer );
 	m_data->iovBuffer.clear();
 	ret = true;
       }
@@ -169,8 +170,9 @@ namespace cond {
       return flush( boost::posix_time::microsec_clock::universal_time() );
     }
     
-    void IOVEditor::checkSession( const std::string& ctx ){
+    void IOVEditor::checkTransaction( const std::string& ctx ){
       if( !m_session.get() ) throwException("The session is not active.",ctx );
+      if( !m_session->isTransactionActive( false ) ) throwException("The transaction is not active.",ctx );
     }
     
   }

@@ -53,8 +53,8 @@ namespace edm {
          void postBeginJob();
          void postEndJob();
          
-         void preSource();
-         void postSource();
+         void preSourceEvent(StreamID);
+         void postSourceEvent(StreamID);
 
          void preSourceLumi();
          void postSourceLumi();
@@ -115,6 +115,8 @@ namespace edm {
 
          void preModuleEvent(StreamContext const&, ModuleCallingContext const&);
          void postModuleEvent(StreamContext const&, ModuleCallingContext const&);
+         void preModuleEventDelayedGet(StreamContext const&, ModuleCallingContext const&);
+         void postModuleEventDelayedGet(StreamContext const&, ModuleCallingContext const&);
          
          void preModuleStreamBeginRun(StreamContext const&, ModuleCallingContext const&);
          void postModuleStreamBeginRun(StreamContext const&, ModuleCallingContext const&);

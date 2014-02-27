@@ -18,6 +18,7 @@ class ParametersDefinerForTP {
 
  public:
   ParametersDefinerForTP(){};
+  ParametersDefinerForTP(const edm::ParameterSet& iConfig);
   virtual ~ParametersDefinerForTP() {};
 
     typedef int Charge; ///< electric charge type
@@ -27,7 +28,7 @@ class ParametersDefinerForTP {
   virtual TrackingParticle::Vector momentum(const edm::Event& iEvent, const edm::EventSetup& iSetup, 
 	const Charge ch, const Point & vtx, const LorentzVector& lv) const;
 
-  virtual TrackingParticle::Vector momentum(const edm::Event& iEvent, const edm::EventSetup& iSetup, const TrackingParticleRef tpr) const{
+  virtual TrackingParticle::Vector momentum(const edm::Event& iEvent, const edm::EventSetup& iSetup, const TrackingParticleRef& tpr) const{
     return momentum(iEvent, iSetup, tpr->charge(),tpr->vertex(),tpr->p4());
   }
 
@@ -47,6 +48,8 @@ class ParametersDefinerForTP {
   }
 
   virtual void initEvent(edm::Handle<SimHitTPAssociationProducer::SimHitTPAssociationList> simHitsTPAssocToSet) const { }
+
+  edm::InputTag beamSpotInputTag_;
 
 };
 

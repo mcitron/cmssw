@@ -14,6 +14,11 @@ ora::Object::Object( const void* ptr, const Reflex::Type& type ):
   m_type( type ){
 }
 
+ora::Object::Object( const void* ptr, const std::string& typeName ):
+  m_ptr( const_cast<void*>(ptr) ),
+  m_type(Reflex::Type::ByName( typeName )){
+}
+
 ora::Object::Object( const Object& rhs):
   m_ptr( rhs.m_ptr ),
   m_type( rhs.m_type ){
@@ -58,6 +63,10 @@ void* ora::Object::cast( const std::type_info& typeInfo ) const{
     
   }
   return ClassUtils::upCast( m_type, m_ptr, castType );
+}
+
+boost::shared_ptr<void> ora::Object::makeShared() const {
+  return boost::shared_ptr<void>( m_ptr, RflxDeleter( m_type ) );
 }
 
 void ora::Object::destruct() {
