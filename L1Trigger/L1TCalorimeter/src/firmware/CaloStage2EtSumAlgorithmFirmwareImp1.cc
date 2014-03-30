@@ -1,7 +1,7 @@
 ///
 /// \class l1t::CaloStage2EtSumAlgorithmFirmwareImp1
 ///
-/// \author: Jim Brooke
+/// \author: Jim Brooke, Matthew Citron
 ///
 /// Description: first iteration of stage 2 jet algo
 
